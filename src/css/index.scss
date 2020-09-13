@@ -51,6 +51,10 @@ a {
   -moz-transition: ease-out 0.3s;
   -o-transition: ease-out 0.3s;
   transition: ease-out 0.3s;
+  &:disabled {
+    pointer-events: none;
+    background: $dark;
+  }
   &:hover {
     color: $green;
     background: $light;
@@ -70,6 +74,13 @@ a {
   &.error {
     background: #fceff3;
     color: #f1b9c9;
+  }
+}
+
+button {
+  &.button {
+    border: none;
+    cursor: pointer;
   }
 }
 
@@ -112,76 +123,83 @@ ul {
   margin: 0 auto;
 }
 
-/* Navigation
-.navigation {
-  width: 270px;
-  flex-shrink: 0;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-  nav {
-    margin-top: 30px;
-    padding: 80px 0 50px 30px;
-    background: #fff;
-    position: relative;
-    z-index: 1;
-  }
+/* UI elements */
 
-  ul {
-    li {
+.ui-input {
+  display: flex;
+  flex-direction: column;
+  margin-top: 25px;
+  &:first-child {
+    margin-top: 0;
+  }
+  label {
+    font-size: 15px;
+    color: $grey;
+    font-family: 'Open Sans', sans-serif;
+  }
+  input {
+    background: $light;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    box-sizing: border-box;
+    color: $dark;
+    font-size: 15px;
+    margin-top: 5px;
+    position: relative;
+    &:active,
+    &:focus {
+      outline: none;
+    }
+  }
+  .error {
+    margin-top: 5px;
+    width: fit-content;
+  }
+}
+
+.ui-radio {
+  margin-top: 25px;
+  p {
+    font-size: 15px;
+    color: $grey;
+    font-family: 'Open Sans', sans-serif;
+  }
+  .ui-radio-controllers {
+    margin-top: 7px;
+    .ui-radio-controller {
+      margin-left: 30px;
       position: relative;
-      &::before {
-        content: '';
+      &:first-child {
+        margin-left: 0;
+      }
+      label {
+        font-family: 'Open Sans', sans-serif;
+        margin-left: 10px;
+      }
+      input {
+        margin-left: 0px;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .checkmark {
         position: absolute;
-        left: -30px;
-        width: 50%;
-        background: $green;
-        height: 100%;
+        top: 4px;
+        left: -1px;
+        height: 14px;
+        width: 14px;
+        background-color: $light;
+        border: 3px solid $green;
+        box-sizing: border-box;
+        border-radius: 50%;
         z-index: -1;
       }
-      a {
-        line-height: 50px;
-        padding-left: 35px;
-        font-weight: 600;
-        font-size: 20px;
-        font-family: 'Open Sans', sans-serif;
-        color: $white;
-        padding: 11px 0 12px 35px;
-        border-radius: 30px;
-        &.active {
-          color: $black;
-          background: $white;
-          &::before {
-            content: '';
-            position: absolute;
-            background: $green;
-            width: calc(100% + 30px);
-            border-bottom-right-radius: 30px;
-            height: 100vh;
-            left: -30px;
-            bottom: 50px;
-            z-index: -1;
-            pointer-events: none;
-          }
-          &::after {
-            content: '';
-            position: absolute;
-            background: $green;
-            width: calc(100% + 30px);
-            border-top-right-radius: 30px;
-            height: 100vh;
-            left: -30px;
-            top: 50px;
-            z-index: -1;
-            pointer-events: none;
-          }
-        }
+      input:checked ~ .checkmark {
+        background-color: $green;
       }
     }
   }
 }
-
- */
 
 /* Content Section */
 .main {
@@ -356,6 +374,17 @@ ul {
       outline: none;
       padding: 8px;
       border-radius: 7px;
+    }
+  }
+}
+
+/* Apply For A Pass */
+
+.apply-for-a-pass {
+  form {
+    width: 40%;
+    button {
+      margin-top: 25px;
     }
   }
 }
