@@ -284,6 +284,9 @@ ul {
         width: 10%;
       }
     }
+    tbody tr {
+      cursor: pointer;
+    }
     .align-table-right {
       text-align: right;
     }
@@ -359,7 +362,7 @@ ul {
     margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
-    a {
+    button {
       margin-right: 15px;
       margin-top: 20px;
       &:last-child {

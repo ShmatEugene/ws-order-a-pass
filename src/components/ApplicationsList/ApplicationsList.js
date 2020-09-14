@@ -1,8 +1,10 @@
 import React from 'react';
 import axios from 'axios';
+import Button from '../UI/Button';
 
 export default function ApplicationsList() {
-  const [orders, setOrders] = React.useState({ date: '1' });
+  const [orders, setOrders] = React.useState(null);
+  const [orderAdditionalInfo, setOrderAdditionalInfo] = React.useState(null);
   React.useEffect(() => {
     axios
       .get('https://ws-order-a-pass.firebaseio.com/orders.json')
@@ -15,33 +17,41 @@ export default function ApplicationsList() {
       });
   }, []);
 
+  const orderTypes = ['Постоянный', 'Временный'];
+  const statuses = {
+    ready: 'Пропуск готов',
+    pending: 'Рассматривается',
+    success: 'Одобрен',
+    error: 'Отклонен',
+  };
+
+  const orderClickHandler = (key) => {
+    orders[key].key = key;
+    setOrderAdditionalInfo(orders[key]);
+  };
+
+  const approveHandler = () => {};
+
   const renderOrders = () => {
-    let or = [];
-    Object.keys(orders).forEach((key, index) => {
-      or.push({
-        email: orders[key].email,
-        endDate: '13.09.2020',
-        key: key,
-        name: orders[key].name,
-        purpose: 'Музей',
-        startDate: '11.09.2020',
-        status: 'pending',
-        type: 1,
-      });
-    });
-    return or.map((order, index) => (
-      <tr key={order.key}>
-        <td>11/09/2020</td>
-        <td>{order.name}</td>
-        <td>Постоянный</td>
-        <td className="align-table-right">
-          <span className="status ready">Пропуск готов</span>
-        </td>
-        <td className="table-photo-content">
-          <div className="photo-placholder"></div>
-        </td>
-      </tr>
-    ));
+    console.log(orders);
+    return (
+      orders &&
+      Object.keys(orders).map((key) => {
+        return (
+          <tr key={key} onClick={() => orderClickHandler(key)}>
+            <td>11/09/2020</td>
+            <td>{orders[key].name}</td>
+            <td>{orderTypes[orders[key].type]}</td>
+            <td className="align-table-right">
+              <span className={`status ${orders[key].status}`}>{statuses[orders[key].status]}</span>
+            </td>
+            <td className="table-photo-content">
+              <div className="photo-placholder"></div>
+            </td>
+          </tr>
+        );
+      })
+    );
   };
 
   return (
@@ -60,53 +70,7 @@ export default function ApplicationsList() {
                 <th className="table-photo align-table-right">Фото</th>
               </tr>
             </thead>
-            <tbody>
-              {renderOrders()}
-              <tr>
-                <td>11/09/2020</td>
-                <td>К. К. Константинопольский</td>
-                <td>Постоянный</td>
-                <td className="align-table-right">
-                  <span className="status ready">Пропуск готов</span>
-                </td>
-                <td className="table-photo-content">
-                  <div className="photo-placholder"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>11/09/2020</td>
-                <td>К. К. Константинопольский</td>
-                <td>Постоянный</td>
-                <td className="align-table-right">
-                  <span className="status pending">Рассматривается</span>
-                </td>
-                <td className="table-photo-content">
-                  <div className="photo-placholder"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>11/09/2020</td>
-                <td>К. К. Константинопольский</td>
-                <td>Постоянный</td>
-                <td className="align-table-right">
-                  <span className="status success">Одобрена</span>
-                </td>
-                <td className="table-photo-content">
-                  <div className="photo-placholder"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>11/09/2020</td>
-                <td>К. К. Константинопольский</td>
-                <td>Постоянный</td>
-                <td className="align-table-right">
-                  <span className="status error">Отклонена</span>
-                </td>
-                <td className="table-photo-content">
-                  <div className="photo-placholder"></div>
-                </td>
-              </tr>
-            </tbody>
+            <tbody>{renderOrders()}</tbody>
           </table>
           <a className="button" href="/#">
             Сохранить изменения
@@ -115,42 +79,44 @@ export default function ApplicationsList() {
         <div className="applications-info">
           <h3>Подробная информация</h3>
           <div className="line"></div>
-          <div className="name">
-            Константин <br /> Константинович <br /> Константинопольский
-          </div>
-          <div className="email">k.konstontinopolsky@mail.ru</div>
+          <div className="name">{orderAdditionalInfo && orderAdditionalInfo.name}</div>
+          <div className="email">{orderAdditionalInfo && orderAdditionalInfo.email}</div>
           <div className="info-block">
             <div className="label">тип</div>
-            <div className="value">Временный</div>
+            <div className="value">
+              {orderAdditionalInfo && orderTypes[orderAdditionalInfo.type]}
+            </div>
           </div>
-          <div className="info-block">
-            <div className="label">зарошен</div>
-            <div className="value">09.11.20</div>
-          </div>
-          <div className="info-block">
-            <div className="label">период действия</div>
-            <div className="value">11.01.20 - 13.09.20</div>
-          </div>
-          <div className="info-block">
-            <div className="label">цель посещения</div>
-            <div className="value">посещение музея учебной организации</div>
-          </div>
+          {orderAdditionalInfo && orderAdditionalInfo.type === 1 ? (
+            <div>
+              <div className="info-block">
+                <div className="label">запрошен</div>
+                <div className="value">09.11.20</div>
+              </div>
+              <div className="info-block">
+                <div className="label">период действия</div>
+                <div className="value">11.01.20 - 13.09.20</div>
+              </div>
+              <div className="info-block">
+                <div className="label">цель посещения</div>
+                <div className="value">{orderAdditionalInfo && orderAdditionalInfo.purpose}</div>
+              </div>
+            </div>
+          ) : null}
           <div className="buttons-block">
-            <a className="button success" href="/#">
+            <Button onClick={() => approveHandler()} type="success">
               Одобрить
-            </a>
-            <a className="button error" href="/#">
+            </Button>
+            <Button onClick={() => approveHandler()} type="error">
               Отклонить
-            </a>
+            </Button>
           </div>
           <div className="buttons-block">
             <select name="status" id="select-status">
               <option value="1">Пропуск готов</option>
               <option value="2">Одобрена</option>
             </select>
-            <a className="button light" href="/#">
-              Печать
-            </a>
+            <Button type="light">Печать</Button>
           </div>
         </div>
       </div>
