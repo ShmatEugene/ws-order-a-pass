@@ -55,6 +55,10 @@ a {
     pointer-events: none;
     background: $dark;
   }
+  &:focus {
+    border: none;
+    outline: none;
+  }
   &:hover {
     color: $green;
     background: $light;
@@ -74,6 +78,14 @@ a {
   &.error {
     background: #fceff3;
     color: #f1b9c9;
+  }
+  &.ready {
+    background: #eff9ff;
+    color: #aae2ff;
+  }
+  &.pending {
+    background: #fff3e6;
+    color: #e9c195;
   }
 }
 
@@ -386,6 +398,22 @@ ul {
 .apply-for-a-pass {
   form {
     width: 40%;
+    button {
+      margin-top: 25px;
+    }
+  }
+}
+
+/* Auth */
+
+.auth {
+  width: 500px;
+  margin: 0 auto;
+  border-radius: 20px;
+  border: 2px solid $green;
+  padding: 30px;
+  margin-top: 80px;
+  form {
     button {
       margin-top: 25px;
     }

@@ -8,11 +8,18 @@ export default function Header() {
         <nav>
           <ul className="d-flex">
             <li>
-              <NavLink to="/apply">Подать заявку</NavLink>
+              <NavLink to="/" exact={true}>
+                Подать заявку
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/" exact={true}>
+              <NavLink to="/applications-list" exact={true}>
                 Просмотр заявок
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/auth" exact={true}>
+                Авторизация
               </NavLink>
             </li>
           </ul>

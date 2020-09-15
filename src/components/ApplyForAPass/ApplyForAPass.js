@@ -72,10 +72,10 @@ function makeId(length) {
 }
 
 export default function ApplyForAPass() {
-  //const [formData, setFormData] = React.useState({});
   const [isFormValid, setIsFormValid] = React.useState(false);
   const [checkedRadioButton, setCheckedRadioButton] = React.useState(0);
   const [formControls, setFormControls] = React.useState(createFormControls());
+  const [loading, setLoading] = React.useState(false);
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
@@ -83,17 +83,19 @@ export default function ApplyForAPass() {
       key: makeId(7),
       status: 'pending',
       type: checkedRadioButton,
+      date: new Date(),
     };
     Object.keys(formControls).forEach((name) => {
       if (formControls[name].for === checkedRadioButton || formControls[name].for === undefined) {
         formData[name] = formControls[name].value;
       }
     });
-
+    setLoading(true);
     axios
       .post('https://ws-order-a-pass.firebaseio.com/orders.json', formData)
       .then((response) => {
         console.log(response);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
@@ -119,8 +121,8 @@ export default function ApplyForAPass() {
       if (!is.email(value) && value.trim() !== '') error.push(validation.email.errorMessage);
     }
     if (validation.cyrillic) {
-      isValid = !value.match(/[^а-я\s]/i) && isValid;
-      if (!!value.match(/[^а-я\s]/i) && value.trim() !== '')
+      isValid = !value.match(/[^а-я\sё]/i) && isValid;
+      if (!!value.match(/[^а-я\sё]/i) && value.trim() !== '')
         error.push(validation.cyrillic.errorMessage);
     }
 
@@ -208,7 +210,7 @@ export default function ApplyForAPass() {
         {renderInputs(checkedRadioButton)}
 
         <Button onClick={formSubmitHandler} disabled={!isFormValid}>
-          Отправить
+          {loading ? '...' : 'Отправить'}
         </Button>
       </form>
     </section>

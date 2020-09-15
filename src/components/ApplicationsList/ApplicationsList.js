@@ -2,14 +2,19 @@ import React from 'react';
 import axios from 'axios';
 import Button from '../UI/Button';
 
+function changeDateFormat(date) {
+  return new Date(date).toLocaleDateString('en-GB');
+}
+
 export default function ApplicationsList() {
   const [orders, setOrders] = React.useState(null);
-  const [orderAdditionalInfo, setOrderAdditionalInfo] = React.useState(null);
+  const [selectedOrder, setSelectedOrder] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [isOrdersChanged, setIsOrdersChanged] = React.useState(false);
   React.useEffect(() => {
     axios
       .get('https://ws-order-a-pass.firebaseio.com/orders.json')
       .then((response) => {
-        console.log(response.data);
         setOrders(response.data);
       })
       .catch((error) => {
@@ -21,36 +26,59 @@ export default function ApplicationsList() {
   const statuses = {
     ready: 'Пропуск готов',
     pending: 'Рассматривается',
-    success: 'Одобрен',
-    error: 'Отклонен',
+    success: 'Одобрена',
+    error: 'Отклонена',
   };
 
   const orderClickHandler = (key) => {
     orders[key].key = key;
-    setOrderAdditionalInfo(orders[key]);
+    setSelectedOrder(orders[key]);
   };
 
-  const approveHandler = () => {};
+  const changeStatusHandler = (status) => {
+    let newOrders = { ...orders };
+    newOrders[selectedOrder.key].status = status;
+    setOrders(newOrders);
+    setIsOrdersChanged(true);
+  };
+
+  const saveChangesHandler = () => {
+    setLoading(true);
+    axios
+      .patch('https://ws-order-a-pass.firebaseio.com/orders.json', orders)
+      .then((response) => {
+        console.log(response);
+        setLoading(false);
+        setIsOrdersChanged(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const renderOrders = () => {
-    console.log(orders);
     return (
       orders &&
-      Object.keys(orders).map((key) => {
-        return (
-          <tr key={key} onClick={() => orderClickHandler(key)}>
-            <td>11/09/2020</td>
-            <td>{orders[key].name}</td>
-            <td>{orderTypes[orders[key].type]}</td>
-            <td className="align-table-right">
-              <span className={`status ${orders[key].status}`}>{statuses[orders[key].status]}</span>
-            </td>
-            <td className="table-photo-content">
-              <div className="photo-placholder"></div>
-            </td>
-          </tr>
-        );
-      })
+      Object.keys(orders)
+        .slice(0)
+        .reverse()
+        .map((key) => {
+          return (
+            <tr key={key} onClick={() => orderClickHandler(key)}>
+              <td>{changeDateFormat(orders[key].date)}</td>
+              <td>{orders[key].name}</td>
+              <td>{orderTypes[orders[key].type]}</td>
+              <td className="align-table-right">
+                <span className={`status ${orders[key].status}`}>
+                  {statuses[orders[key].status]}
+                </span>
+              </td>
+              <td className="table-photo-content">
+                <div className="photo-placholder"></div>
+              </td>
+            </tr>
+          );
+        })
     );
   };
 
@@ -72,53 +100,60 @@ export default function ApplicationsList() {
             </thead>
             <tbody>{renderOrders()}</tbody>
           </table>
-          <a className="button" href="/#">
-            Сохранить изменения
-          </a>
+          <Button disabled={!isOrdersChanged} onClick={saveChangesHandler}>
+            {loading ? '...' : 'Сохранить изменения'}
+          </Button>
         </div>
-        <div className="applications-info">
-          <h3>Подробная информация</h3>
-          <div className="line"></div>
-          <div className="name">{orderAdditionalInfo && orderAdditionalInfo.name}</div>
-          <div className="email">{orderAdditionalInfo && orderAdditionalInfo.email}</div>
-          <div className="info-block">
-            <div className="label">тип</div>
-            <div className="value">
-              {orderAdditionalInfo && orderTypes[orderAdditionalInfo.type]}
+        {selectedOrder && (
+          <div className="applications-info">
+            <h3>Подробная информация</h3>
+            <div className="line"></div>
+            <div className="name">{selectedOrder.name}</div>
+            <div className="email">{selectedOrder.email}</div>
+            <div className="info-block">
+              <div className="label">тип</div>
+              <div className="value">{orderTypes[selectedOrder.type]}</div>
             </div>
-          </div>
-          {orderAdditionalInfo && orderAdditionalInfo.type === 1 ? (
-            <div>
-              <div className="info-block">
-                <div className="label">запрошен</div>
-                <div className="value">09.11.20</div>
-              </div>
-              <div className="info-block">
-                <div className="label">период действия</div>
-                <div className="value">11.01.20 - 13.09.20</div>
-              </div>
-              <div className="info-block">
-                <div className="label">цель посещения</div>
-                <div className="value">{orderAdditionalInfo && orderAdditionalInfo.purpose}</div>
-              </div>
+            <div className="info-block">
+              <div className="label">статус</div>
+              <div className="value">{statuses[selectedOrder.status]}</div>
             </div>
-          ) : null}
-          <div className="buttons-block">
-            <Button onClick={() => approveHandler()} type="success">
-              Одобрить
-            </Button>
-            <Button onClick={() => approveHandler()} type="error">
-              Отклонить
-            </Button>
-          </div>
-          <div className="buttons-block">
-            <select name="status" id="select-status">
+            <div className="info-block">
+              <div className="label">запрошен</div>
+              <div className="value">{changeDateFormat(selectedOrder.date)}</div>
+            </div>
+            {selectedOrder.type === 1 ? (
+              <div>
+                <div className="info-block">
+                  <div className="label">период действия</div>
+                  <div className="value">11.01.20 - 13.09.20</div>
+                </div>
+                <div className="info-block">
+                  <div className="label">цель посещения</div>
+                  <div className="value">{selectedOrder.purpose}</div>
+                </div>
+              </div>
+            ) : null}
+            <div className="buttons-block">
+              <Button onClick={() => changeStatusHandler('success')} type="success">
+                Одобрить
+              </Button>
+              <Button onClick={() => changeStatusHandler('error')} type="error">
+                Отклонить
+              </Button>
+            </div>
+            <div className="buttons-block">
+              {/* <select name="status" id="select-status">
               <option value="1">Пропуск готов</option>
               <option value="2">Одобрена</option>
-            </select>
-            <Button type="light">Печать</Button>
+            </select> */}
+              <Button onClick={() => changeStatusHandler('ready')} type="ready">
+                Пропуск готов
+              </Button>
+              <Button type="light">Печать</Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
