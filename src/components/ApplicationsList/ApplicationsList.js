@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import Button from '../UI/Button';
 import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 function changeDateFormat(date) {
   return new Date(date).toLocaleDateString('en-GB');
@@ -13,6 +14,9 @@ export default function ApplicationsList() {
   const [loading, setLoading] = React.useState(false);
   const [isOrdersChanged, setIsOrdersChanged] = React.useState(false);
   const { id } = useParams();
+  const state = useSelector(({ auth }) => auth);
+  const isAuthenticated = !!state.token;
+
   React.useEffect(() => {
     axios
       .get('https://ws-order-a-pass.firebaseio.com/orders.json')
@@ -33,13 +37,13 @@ export default function ApplicationsList() {
   };
 
   const orderClickHandler = (key) => {
-    orders[key].key = key;
+    orders[key].dataBaseID = key;
     setSelectedOrder(orders[key]);
   };
 
   const changeStatusHandler = (status) => {
     let newOrders = { ...orders };
-    newOrders[selectedOrder.key].status = status;
+    newOrders[selectedOrder.dataBaseID].status = status;
     setOrders(newOrders);
     setIsOrdersChanged(true);
   };
@@ -65,7 +69,6 @@ export default function ApplicationsList() {
         .slice(0)
         .reverse()
         .map((key) => {
-          console.log(orders[key].key, id);
           if ((id && orders[key].key === id) || !id) {
             return (
               <tr key={key} onClick={() => orderClickHandler(key)}>
@@ -107,9 +110,11 @@ export default function ApplicationsList() {
             </thead>
             <tbody>{renderOrders()}</tbody>
           </table>
-          <Button disabled={!isOrdersChanged} onClick={saveChangesHandler}>
-            {loading ? '...' : 'Сохранить изменения'}
-          </Button>
+          {isAuthenticated && (
+            <Button disabled={!isOrdersChanged} onClick={saveChangesHandler}>
+              {loading ? '...' : 'Сохранить изменения'}
+            </Button>
+          )}
         </div>
         {selectedOrder && (
           <div className="applications-info">
@@ -133,6 +138,10 @@ export default function ApplicationsList() {
               <div className="label">ключ</div>
               <div className="value">{selectedOrder.key}</div>
             </div>
+            <div className="info-block">
+              <div className="label">img</div>
+              <div className="value">{selectedOrder.image}</div>
+            </div>
             {selectedOrder.type === 1 ? (
               <div>
                 <div className="info-block">
@@ -145,24 +154,28 @@ export default function ApplicationsList() {
                 </div>
               </div>
             ) : null}
-            <div className="buttons-block">
-              <Button onClick={() => changeStatusHandler('success')} type="success">
-                Одобрить
-              </Button>
-              <Button onClick={() => changeStatusHandler('error')} type="error">
-                Отклонить
-              </Button>
-            </div>
-            <div className="buttons-block">
-              {/* <select name="status" id="select-status">
-              <option value="1">Пропуск готов</option>
-              <option value="2">Одобрена</option>
-            </select> */}
-              <Button onClick={() => changeStatusHandler('ready')} type="ready">
-                Пропуск готов
-              </Button>
-              <Button type="light">Печать</Button>
-            </div>
+            {isAuthenticated && state.login.match('admin') && (
+              <div className="buttons-block">
+                <Button onClick={() => changeStatusHandler('success')} type="success">
+                  Одобрить
+                </Button>
+                <Button onClick={() => changeStatusHandler('error')} type="error">
+                  Отклонить
+                </Button>
+              </div>
+            )}
+            {isAuthenticated && state.login.match('operator') && (
+              <div className="buttons-block">
+                {/* <select name="status" id="select-status">
+                    <option value="1">Пропуск готов</option>
+                    <option value="2">Одобрена</option>
+                  </select> */}
+                <Button onClick={() => changeStatusHandler('ready')} type="ready">
+                  Пропуск готов
+                </Button>
+                <Button type="light">Печать</Button>
+              </div>
+            )}
           </div>
         )}
       </div>

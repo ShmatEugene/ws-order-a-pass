@@ -91,7 +91,8 @@ class Auth extends Component {
     });
   }
 
-  loginHandler = async () => {
+  loginHandler = async (event) => {
+    event.preventDefault();
     this.props.auth(
       this.state.formControls.login.value + '@mail.ru',
       this.state.formControls.password.value,

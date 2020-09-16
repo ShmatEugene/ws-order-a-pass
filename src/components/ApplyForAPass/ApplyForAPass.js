@@ -4,6 +4,7 @@ import is from 'is_js';
 import RadioButton from '../UI/RadioButton';
 import Button from '../UI/Button';
 import axios from 'axios';
+import ImageUploader from '../ImageUploader';
 
 const defaultControl = {
   value: '',
@@ -65,10 +66,13 @@ function createFormControls() {
 
 function makeId(length) {
   let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  for (let i = 0; i < length - 2; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  for (let i = 0; i < 2; i++) {
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length));
   }
   return result;
 }
@@ -79,6 +83,7 @@ export default function ApplyForAPass() {
   const [formControls, setFormControls] = React.useState(createFormControls());
   const [loading, setLoading] = React.useState(false);
   const [orderLink, setOrderLink] = React.useState(false);
+  const [selectedImg, setSelectedImg] = React.useState(null);
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
@@ -87,6 +92,7 @@ export default function ApplyForAPass() {
       status: 'pending',
       type: checkedRadioButton,
       date: new Date(),
+      image: selectedImg,
     };
     Object.keys(formControls).forEach((name) => {
       if (formControls[name].for === checkedRadioButton || formControls[name].for === undefined) {
@@ -98,7 +104,7 @@ export default function ApplyForAPass() {
       .post('https://ws-order-a-pass.firebaseio.com/orders.json', formData)
       .then((response) => {
         console.log(response);
-        setOrderLink(response.data.name);
+        setOrderLink(formData.key);
         setLoading(false);
       })
       .catch((error) => {
@@ -172,6 +178,10 @@ export default function ApplyForAPass() {
     console.log('clicked');
   };
 
+  const uploadImageHandler = (image) => {
+    setSelectedImg(image);
+  };
+
   function renderInputs(id) {
     const inputs = Object.keys(formControls).map((controlName, index) => {
       const control = formControls[controlName];
@@ -199,29 +209,44 @@ export default function ApplyForAPass() {
     return inputs;
   }
 
+  const onSelectFile = (event) => {
+    // Create an object of formData
+    const formData = new FormData();
+
+    // Update the formData object
+    formData.append('myFile', event.target.files[0], event.target.files[0].name);
+    setSelectedImg(formData);
+  };
+
   return (
     <section className="apply-for-a-pass section-indent">
       <h2>Подать заявку</h2>
       <form action="#">
-        {renderInputs()}
-        <RadioButton
-          options={[
-            {
-              label: 'Постоянный',
-              id: 0,
-            },
-            { label: 'Временный', id: 1 },
-          ]}
-          title="Тип пропуска"
-          onSelect={(event) => onRadioButtonSelectHandler(event)}
-          checkedRadioButton={checkedRadioButton}
-        />
-        {renderInputs(checkedRadioButton)}
+        <div className="left">
+          {renderInputs()}
+          <RadioButton
+            options={[
+              {
+                label: 'Постоянный',
+                id: 0,
+              },
+              { label: 'Временный', id: 1 },
+            ]}
+            title="Тип пропуска"
+            onSelect={(event) => onRadioButtonSelectHandler(event)}
+            checkedRadioButton={checkedRadioButton}
+          />
+          {renderInputs(checkedRadioButton)}
 
-        <Button onClick={formSubmitHandler} disabled={!isFormValid}>
-          {loading ? '...' : 'Отправить'}
-        </Button>
-        {orderLink && `${window.location.href}/applications-list/${orderLink}`}
+          <Button onClick={formSubmitHandler} disabled={!isFormValid}>
+            {loading ? '...' : 'Отправить'}
+          </Button>
+          {orderLink && `${window.location.href}/applications-list/${orderLink}`}
+        </div>
+        <div className="right">
+          {/* <ImageUploader onUpload={uploadImageHandler} /> */}
+          <input type="file" accept="image/*" onChange={onSelectFile} />
+        </div>
       </form>
     </section>
   );

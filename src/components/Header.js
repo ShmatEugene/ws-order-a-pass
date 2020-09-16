@@ -1,7 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Button from './UI/Button';
 
 export default function Header() {
+  const state = useSelector(({ auth }) => auth);
+  const isAuthenticated = !!state.token;
+
   return (
     <>
       <header className="header d-flex">
@@ -13,23 +18,26 @@ export default function Header() {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/applications-list" exact={true}>
-                Просмотр заявок
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/auth" exact={true}>
-                Авторизация
-              </NavLink>
+              {isAuthenticated && (
+                <NavLink to="/applications-list" exact={true}>
+                  Просмотр заявок
+                </NavLink>
+              )}
             </li>
           </ul>
         </nav>
         <div className="account-management d-flex">
-          <div className="username">operator</div>
+          <div className="username">{state.login && state.login.split('@')[0]}</div>
           <div className="log-in">
-            <a className="button button-green" href="/#">
-              Войти
-            </a>
+            {isAuthenticated ? (
+              <NavLink to="/logout" exact={true}>
+                <Button>Выйти</Button>
+              </NavLink>
+            ) : (
+              <NavLink to="/auth" exact={true}>
+                <Button>Войти</Button>
+              </NavLink>
+            )}
           </div>
           {/* <div className="sign-up">
             <a className="button button-green light" href="/#">
