@@ -38,6 +38,7 @@ function createFormControls() {
       ...defaultControl,
       label: 'Начало действия',
       for: 1,
+      type: 'date',
       validation: {
         required: { active: true, errorMessage: 'Обязатльное поле' },
       },
@@ -46,6 +47,7 @@ function createFormControls() {
       ...defaultControl,
       label: 'Окочание действия',
       for: 1,
+      type: 'date',
       validation: {
         required: { active: true, errorMessage: 'Обязатльное поле' },
       },
@@ -76,6 +78,7 @@ export default function ApplyForAPass() {
   const [checkedRadioButton, setCheckedRadioButton] = React.useState(0);
   const [formControls, setFormControls] = React.useState(createFormControls());
   const [loading, setLoading] = React.useState(false);
+  const [orderLink, setOrderLink] = React.useState(false);
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
@@ -95,6 +98,7 @@ export default function ApplyForAPass() {
       .post('https://ws-order-a-pass.firebaseio.com/orders.json', formData)
       .then((response) => {
         console.log(response);
+        setOrderLink(response.data.name);
         setLoading(false);
       })
       .catch((error) => {
@@ -164,6 +168,10 @@ export default function ApplyForAPass() {
     setFormControls(form);
   };
 
+  const onInputClickHandler = () => {
+    console.log('clicked');
+  };
+
   function renderInputs(id) {
     const inputs = Object.keys(formControls).map((controlName, index) => {
       const control = formControls[controlName];
@@ -180,6 +188,7 @@ export default function ApplyForAPass() {
             validation={control.validation}
             shouldValidate={control.shouldValidate}
             onChange={(event) => onInputChangeHandler(event, controlName)}
+            onClick={onInputClickHandler}
           />
         );
       } else {
@@ -212,6 +221,7 @@ export default function ApplyForAPass() {
         <Button onClick={formSubmitHandler} disabled={!isFormValid}>
           {loading ? '...' : 'Отправить'}
         </Button>
+        {orderLink && `${window.location.href}/applications-list/${orderLink}`}
       </form>
     </section>
   );

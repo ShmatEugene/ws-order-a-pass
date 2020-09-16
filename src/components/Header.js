@@ -31,11 +31,11 @@ export default function Header() {
               Войти
             </a>
           </div>
-          <div className="sign-up">
+          {/* <div className="sign-up">
             <a className="button button-green light" href="/#">
               Зарегистрироваться
             </a>
-          </div>
+          </div> */}
         </div>
       </header>
       <div className="line"></div>

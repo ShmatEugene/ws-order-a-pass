@@ -11,6 +11,7 @@ function App() {
       <Route path="/" exact component={ApplyForAPass} />
       <Route path="/applications-list" exact component={ApplicationsList} />
       <Route path="/auth" exact component={Auth} />
+      <Route path="/applications-list/:id" exact component={ApplicationsList} />
       <Redirect to={'/'} />
     </Switch>
   );

@@ -213,6 +213,76 @@ ul {
   }
 }
 
+//Calendar
+.ui-calendar {
+  background: $white;
+  padding: 22px 25px 15px 25px;
+  position: absolute;
+  width: 20em;
+  border: 2px solid $green;
+  border-radius: 15px;
+  z-index: 100;
+}
+
+.ui-calendar.top {
+  top: -230px;
+}
+
+.ui-calendar-control {
+  padding: 8px;
+  font-size: 11px !important;
+  cursor: pointer !important;
+  line-height: 11px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ui-calendar-control.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ui-calendar-title {
+  font-family: 'Open Sans', sans-serif;
+  color: $green;
+  font-size: 15px;
+  font-weight: bold;
+  margin: auto !important;
+}
+
+.ui-calendar table {
+  font-size: 0.9em;
+  border-collapse: collapse;
+  text-align: center;
+  width: 100%;
+}
+
+.ui-calendar table thead tr th {
+  color: $grey;
+  font-weight: 300;
+  font-size: 13px;
+  text-transform: capitalize;
+  text-align: center;
+  padding: 0.7em 0.3em;
+}
+
+.ui-calendar table td {
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 6px 0px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+}
+
+.ui-calendar table td.today {
+  background: $black;
+}
+
+.ui-calendar table td.active {
+  background: $green;
+  color: $white;
+}
+
 /* Content Section */
 .main {
   .content {

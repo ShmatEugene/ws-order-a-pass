@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import Button from '../UI/Button';
+import { useParams } from 'react-router-dom';
 
 function changeDateFormat(date) {
   return new Date(date).toLocaleDateString('en-GB');
@@ -11,6 +12,7 @@ export default function ApplicationsList() {
   const [selectedOrder, setSelectedOrder] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [isOrdersChanged, setIsOrdersChanged] = React.useState(false);
+  const { id } = useParams();
   React.useEffect(() => {
     axios
       .get('https://ws-order-a-pass.firebaseio.com/orders.json')
@@ -63,21 +65,26 @@ export default function ApplicationsList() {
         .slice(0)
         .reverse()
         .map((key) => {
-          return (
-            <tr key={key} onClick={() => orderClickHandler(key)}>
-              <td>{changeDateFormat(orders[key].date)}</td>
-              <td>{orders[key].name}</td>
-              <td>{orderTypes[orders[key].type]}</td>
-              <td className="align-table-right">
-                <span className={`status ${orders[key].status}`}>
-                  {statuses[orders[key].status]}
-                </span>
-              </td>
-              <td className="table-photo-content">
-                <div className="photo-placholder"></div>
-              </td>
-            </tr>
-          );
+          console.log(orders[key].key, id);
+          if ((id && orders[key].key === id) || !id) {
+            return (
+              <tr key={key} onClick={() => orderClickHandler(key)}>
+                <td>{changeDateFormat(orders[key].date)}</td>
+                <td>{orders[key].name}</td>
+                <td>{orderTypes[orders[key].type]}</td>
+                <td className="align-table-right">
+                  <span className={`status ${orders[key].status}`}>
+                    {statuses[orders[key].status]}
+                  </span>
+                </td>
+                <td className="table-photo-content">
+                  <div className="photo-placholder"></div>
+                </td>
+              </tr>
+            );
+          } else {
+            return null;
+          }
         })
     );
   };
@@ -122,11 +129,15 @@ export default function ApplicationsList() {
               <div className="label">запрошен</div>
               <div className="value">{changeDateFormat(selectedOrder.date)}</div>
             </div>
+            <div className="info-block">
+              <div className="label">ключ</div>
+              <div className="value">{selectedOrder.key}</div>
+            </div>
             {selectedOrder.type === 1 ? (
               <div>
                 <div className="info-block">
                   <div className="label">период действия</div>
-                  <div className="value">11.01.20 - 13.09.20</div>
+                  <div className="value">{`${selectedOrder.startDate} - ${selectedOrder.endDate}`}</div>
                 </div>
                 <div className="info-block">
                   <div className="label">цель посещения</div>
