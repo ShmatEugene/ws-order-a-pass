@@ -81,7 +81,9 @@ export default function ApplicationsList() {
                   </span>
                 </td>
                 <td className="table-photo-content">
-                  <div className="photo-placholder"></div>
+                  <div className="photo-placholder">
+                    {orders[key].imageLink && <img src={orders[key].imageLink} alt="profile" />}
+                  </div>
                 </td>
               </tr>
             );

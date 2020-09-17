@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import Button from './UI/Button';
+import { changeImage, setUploadedImg } from '../store/actions/pass';
 
 const pixelRatio = 4;
 
@@ -17,16 +19,18 @@ function getResizedCanvas(canvas, newWidth, newHeight) {
 }
 
 export default function ImageUploader(props) {
-  const [upImg, setUpImg] = useState();
+  //const [upImg, setUpImg] = useState();
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const [crop, setCrop] = useState({ unit: '%', width: 30, aspect: 1 / 1 });
   const [completedCrop, setCompletedCrop] = useState(null);
+  const dispatch = useDispatch();
+  const state = useSelector(({ pass }) => pass);
 
   const onSelectFile = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const reader = new FileReader();
-      reader.addEventListener('load', () => setUpImg(reader.result));
+      reader.addEventListener('load', () => dispatch(setUploadedImg(reader.result)));
       reader.readAsDataURL(e.target.files[0]);
     }
   };
@@ -67,35 +71,18 @@ export default function ImageUploader(props) {
     );
   }, [completedCrop]);
 
-  function generateDownload(previewCanvas, crop) {
+  function generateDownload(event, previewCanvas, crop) {
+    event.preventDefault();
     if (!crop || !previewCanvas) {
       return;
     }
 
     const canvas = getResizedCanvas(previewCanvas, crop.width, crop.height);
-    // canvas.toBlob(function (blob) {
-    //   var newImg = document.createElement('img'),
-    //     url = URL.createObjectURL(blob);
-
-    //   newImg.onload = function () {
-    //     // больше не нужно читать blob, поэтому он отменен
-    //     URL.revokeObjectURL(url);
-    //   };
-    //   props.onUpload(newImg);
-    //   newImg.src = url;
-    // });
 
     canvas.toBlob(
       (blob) => {
-        //const previewUrl = window.URL.createObjectURL(blob);
-        // console.log(previewUrl);
-        // const anchor = document.createElement('a');
-        // anchor.download = 'cropPreview.png';
-        // anchor.href = URL.createObjectURL(blob);
-        // anchor.click();
-
-        // window.URL.revokeObjectURL(previewUrl);
         props.onUpload(blob);
+        dispatch(changeImage(window.URL.createObjectURL(blob)));
         console.log(blob);
       },
       'image/png',
@@ -105,17 +92,20 @@ export default function ImageUploader(props) {
 
   return (
     <div>
-      <div>
-        <input type="file" accept="image/*" onChange={onSelectFile} />
+      <div className="ui-photo-picker">
+        <label htmlFor="photo">
+          <p>Фотография</p>
+        </label>
+        <input type="file" name="photo" accept="image/*" onChange={onSelectFile} />
       </div>
       <ReactCrop
-        src={upImg}
+        src={state.uploadedImg}
         onImageLoaded={onLoad}
         crop={crop}
         onChange={(c) => setCrop(c)}
         onComplete={(c) => setCompletedCrop(c)}
       />
-      <div>
+      <div className="preview">
         <canvas
           ref={previewCanvasRef}
           style={{
@@ -124,11 +114,12 @@ export default function ImageUploader(props) {
           }}
         />
       </div>
+      <br />
       <Button
         type="button"
         disabled={!completedCrop?.width || !completedCrop?.height}
-        onClick={() => generateDownload(previewCanvasRef.current, completedCrop)}>
-        Download cropped image
+        onClick={(event) => generateDownload(event, previewCanvasRef.current, completedCrop)}>
+        Применить фотографию
       </Button>
     </div>
   );

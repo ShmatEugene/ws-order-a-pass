@@ -1,10 +1,15 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Input from '../UI/Input';
 import is from 'is_js';
 import RadioButton from '../UI/RadioButton';
 import Button from '../UI/Button';
 import axios from 'axios';
+import { storage } from '../../firebase';
 import ImageUploader from '../ImageUploader';
+import Guest from '../PassTemplates/Guest';
+import { changePassType, inputsChange, resetPass } from '../../store/actions/pass';
+import Employee from '../PassTemplates/Employee';
 
 const defaultControl = {
   value: '',
@@ -84,6 +89,8 @@ export default function ApplyForAPass() {
   const [loading, setLoading] = React.useState(false);
   const [orderLink, setOrderLink] = React.useState(false);
   const [selectedImg, setSelectedImg] = React.useState(null);
+  const dispatch = useDispatch();
+  const state = useSelector(({ pass }) => pass);
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
@@ -92,7 +99,7 @@ export default function ApplyForAPass() {
       status: 'pending',
       type: checkedRadioButton,
       date: new Date(),
-      image: selectedImg,
+      imageLink: '',
     };
     Object.keys(formControls).forEach((name) => {
       if (formControls[name].for === checkedRadioButton || formControls[name].for === undefined) {
@@ -100,16 +107,34 @@ export default function ApplyForAPass() {
       }
     });
     setLoading(true);
-    axios
-      .post('https://ws-order-a-pass.firebaseio.com/orders.json', formData)
-      .then((response) => {
-        console.log(response);
-        setOrderLink(formData.key);
-        setLoading(false);
-      })
-      .catch((error) => {
+
+    console.log(selectedImg);
+    const imageName = makeId(20);
+    const uploadTask = storage.ref(`images/${imageName}.jpg`).put(selectedImg);
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {},
+      (error) => {
         console.log(error);
-      });
+      },
+      () => {
+        storage
+          .ref('images')
+          .child(`${imageName}.jpg`)
+          .getDownloadURL()
+          .then((url) => {
+            formData.imageLink = url;
+            axios
+              .post(`https://ws-order-a-pass.firebaseio.com/orders.json/`, formData)
+              .then((response) => {
+                console.log(response);
+                setOrderLink(formData.key);
+                setLoading(false);
+                dispatch(resetPass());
+              });
+          });
+      },
+    );
 
     setFormControls(createFormControls());
     console.log(formData);
@@ -148,6 +173,7 @@ export default function ApplyForAPass() {
           (formControls[name].for !== id && formControls[name].for !== undefined)) &&
         isFormValid;
     });
+    dispatch(changePassType(id));
     setIsFormValid(isFormValid);
   };
 
@@ -170,12 +196,9 @@ export default function ApplyForAPass() {
         isFormValid;
     });
 
+    dispatch(inputsChange(form));
     setIsFormValid(isFormValid);
     setFormControls(form);
-  };
-
-  const onInputClickHandler = () => {
-    console.log('clicked');
   };
 
   const uploadImageHandler = (image) => {
@@ -198,7 +221,6 @@ export default function ApplyForAPass() {
             validation={control.validation}
             shouldValidate={control.shouldValidate}
             onChange={(event) => onInputChangeHandler(event, controlName)}
-            onClick={onInputClickHandler}
           />
         );
       } else {
@@ -208,15 +230,6 @@ export default function ApplyForAPass() {
 
     return inputs;
   }
-
-  const onSelectFile = (event) => {
-    // Create an object of formData
-    const formData = new FormData();
-
-    // Update the formData object
-    formData.append('myFile', event.target.files[0], event.target.files[0].name);
-    setSelectedImg(formData);
-  };
 
   return (
     <section className="apply-for-a-pass section-indent">
@@ -241,11 +254,30 @@ export default function ApplyForAPass() {
           <Button onClick={formSubmitHandler} disabled={!isFormValid}>
             {loading ? '...' : 'Отправить'}
           </Button>
-          {orderLink && `${window.location.href}/applications-list/${orderLink}`}
+          <br />
+          {orderLink && (
+            <span className={`status pending order-link`}>
+              {`${window.location.href}applications-list/${orderLink}`}
+            </span>
+          )}
         </div>
         <div className="right">
-          {/* <ImageUploader onUpload={uploadImageHandler} /> */}
-          <input type="file" accept="image/*" onChange={onSelectFile} />
+          <ImageUploader onUpload={uploadImageHandler} />
+        </div>
+        <div className="pass">
+          {state.type === 1 ? (
+            <Guest
+              name={state.formData && state.formData.name.value}
+              imgSrc={state.formData && state.img}
+              startDate={state.formData && state.formData.startDate.value}
+              endDate={state.formData && state.formData.endDate.value}
+            />
+          ) : (
+            <Employee
+              name={state.formData && state.formData.name.value}
+              imgSrc={state.formData && state.img}
+            />
+          )}
         </div>
       </form>
     </section>
