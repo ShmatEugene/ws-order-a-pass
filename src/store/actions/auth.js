@@ -26,7 +26,11 @@ export function auth(email, password, isLogin) {
       localStorage.setItem('userId', data.localId);
       localStorage.setItem('expirationDate', expirationDate);
       localStorage.setItem('login', email);
-      dispatch(authSuccess(data.idToken, email));
+
+      const isOperator = !!email.match('operator');
+      const isAdmin = !!email.match('admin');
+
+      dispatch(authSuccess(data.idToken, email, isOperator, isAdmin));
       dispatch(autoLogout(data.expiresIn));
     } catch (error) {
       console.log(error);
@@ -34,11 +38,13 @@ export function auth(email, password, isLogin) {
   };
 }
 
-export function authSuccess(token, login) {
+export function authSuccess(token, login, isOperator, isAdmin) {
   return {
     type: AUTH_SUCCESS,
     token,
     login,
+    isOperator,
+    isAdmin,
   };
 }
 
@@ -67,10 +73,12 @@ export function autoLogin() {
     } else {
       const expirationDate = new Date(localStorage.getItem('expirationDate'));
       const login = localStorage.getItem('login');
+      const isOperator = !!login.match('operator');
+      const isAdmin = !!login.match('admin');
       if (expirationDate <= new Date()) {
         dispatch(logout());
       } else {
-        dispatch(authSuccess(token, login));
+        dispatch(authSuccess(token, login, isOperator, isAdmin));
         dispatch(autoLogout((expirationDate.getTime() - new Date().getTime()) / 1000));
       }
     }

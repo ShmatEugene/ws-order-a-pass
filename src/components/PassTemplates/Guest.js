@@ -1,6 +1,5 @@
 import React from 'react';
 import './guest.scss';
-import { useSelector } from 'react-redux';
 
 export default function Guest({ name, imgSrc, startDate, endDate }) {
   return (
